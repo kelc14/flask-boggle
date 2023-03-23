@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLAY WORD FINDER</title>
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+      integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+      crossorigin="anonymous"
+    /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://kit.fontawesome.com/3e5abf0ecb.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <header class="header-container">
+      <img
+        src="../images/logo-standin.png"
+        alt="Word Game Logo"
+        id="word-game-logo"
+      />
+      <a href="#" class="header-btn" id="menu-btn"
+        ><i class="fa-solid fa-bars"></i
+      ></a>
+      <a href="#" class="header-btn" id="info-btn"
+        ><i class="fa-solid fa-question"></i
+      ></a>
+    </header>
+    <div class="active-game">
+      <div class="score-container">
+        <p id="score-text"></p>
+        <p id="high-score-text"></p>
+        <p id="timer-text"></p>
+      </div>
+
+      <div class="game-container">
+        {% for letter_row in letters %} {% for char in letter_row %}
+        <div class="letter-button">{{char}}</div>
+        {% endfor %} {% endfor %}
+      </div>
+
+      <div class="submit-container">
+        <div class="form-container">
+          <form method="post" class="add-word">
+            <input name="user_guess" id="user_guess" />
+            <button id="submit-word">Go!</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="message-container">
+        <div id="success-alert" class="alert alert-success"></div>
+        <div id="error-alert" class="alert alert-error"></div>
+      </div>
+
+      <div class="found-word-list-container">
+        <ul id="found-word-list"></ul>
+      </div>
+    </div>
+
+    <div class="start-game message-container">
+      <span class="directions">
+        <!-- <p class="menu-title">How To Play</p>
+        <p class="directions-list">
+          Make words by connecting adjacent letters. You can choose letters to
+          the left, right, above, below or diagonal from the last letter you
+          chose.
+        </p>
+        <p class="directions-list">For Example:</p> -->
+        <img src="/images/ready.gif" alt="READY ... loading gif" />
+      </span>
+      <a href="#" class="start-button" id="start-btn"> START GAME </a>
+    </div>
+
+    <div class="end-game message-container">
+      <p class="menu-title" id="times-up">Time's Up!</p>
+      <p id="end-score"></p>
+
+      <!--********************* fix this to work better ---- play again button ********************* -->
+      <a class="start-button play-again" href="/">PLAY AGAIN</a>
+    </div>
+
+    <div class="menu-screen message-container">
+      <p class="menu-title">GAME STATS</p>
+      <ul id="game-stats">
+        <li id="game-stats-high-score"></li>
+        <li id="game-stats-play-count"></li>
+      </ul>
+      <!--********************* fix this to work better ---- play again button ********************* -->
+      <a class="start-button play-again" href="/">NEW GAME</a>
+    </div>
+
+    <div class="info-screen message-container">
+      <p class="menu-title">HOW TO PLAY</p>
+      <span class="directions">
+        <p class="directions-list">
+          Make words by connecting adjacent letters. You can choose letters to
+          the left, right, above, below or diagonal from the last letter you
+          chose.
+        </p>
+        <p class="directions-list">For Example:</p>
+        <img
+          src="/images/directions.png"
+          alt="Sample Solutions for Word Finder Game"
+        />
+      </span>
+      <!--********************* fix this to work better ---- play again button ********************* -->
+      <a class="start-button play-again" href="/">NEW GAME</a>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- <script src="/static/app.js"></script> -->
+    <script src="/static/app_oop.js"></script>
+  </body>
+</html>
