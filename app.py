@@ -12,6 +12,7 @@ high_score = 0
 
 @app.route('/')
 def display_play():
+    """Create new board game and display the game's HTML """
     board_letters = boggle_game.make_board()
 
     session['board'] = board_letters
