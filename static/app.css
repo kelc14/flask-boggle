@@ -1,25 +1,45 @@
 :root {
-  /* light mode */
-  --light-beige-bg: #fbf9f7;
-  --light-pink: #efe1de;
-  --light-green: #bdc9bb;
-  --light-gray: #8f9491;
-  --light-black: #363636;
-
-  /* dark mode */
-
   /* font */
   --theme-font: "Poppins", sans-serif;
   --bold-font-weight: 600;
   --reg-font-weight: 400;
 }
 
+/* Light Mode */
+:root[color-mode="light"] {
+  --color-bg: rgb(251, 249, 247);
+  --color-font: #363636;
+  --color-element1: #bdc9bb;
+  --color-element2: #efe1de;
+  --color-box-shadow: #8f9491;
+}
+
+/* Dark Mode */
+:root[color-mode="dark"] {
+  --color-bg: rgb(3, 0, 28);
+  --color-font: #f6f1f1;
+  --color-element1: #5b8fb9;
+  --color-element2: #4e31aa;
+  --color-box-shadow: #f6f1f1;
+}
+
+/* Any element with the class "light--hidden" will be hidden when the site is set to Light Mode */
+:root[color-mode="light"] .light--hidden {
+  display: none;
+}
+
+/* Any element with the class "dark--hidden" will be hidden when the site is set to Dark Mode */
+:root[color-mode="dark"] .dark--hidden {
+  display: none;
+}
+
 /* // X-Small devices (portrait phones, less than 576px) */
 
 body {
-  background-color: var(--light-beige-bg);
+  background-color: var(--color-bg);
   font-family: var(--theme-font);
-  font-weight: var(--light-beige-bg);
+  font-weight: var(--reg-font-weight);
+  color: var(--color-font);
 }
 
 /* header / nav bar */
@@ -29,9 +49,9 @@ body {
 }
 
 .header-container a {
-  background-color: var(--light-green);
+  background-color: var(--color-element1);
   border-radius: 10px;
-  box-shadow: 3px 3px 3px var(--light-gray);
+  box-shadow: 3px 3px 3px var(--color-box-shadow);
 
   width: 50px;
   height: 50px;
@@ -44,7 +64,15 @@ body {
 .header-btn i {
   font-size: 30px;
   padding: 10px;
-  color: var(--light-black);
+  color: var(--color-font);
+}
+
+.color-mode__btn {
+  color: var(--color-font);
+  background-color: var(--color-bg);
+  font-size: 33px;
+  padding: 10px;
+  border: none;
 }
 
 /* start button */
@@ -59,9 +87,9 @@ body {
 } */
 
 #start-btn {
-  background-color: var(--light-pink);
+  background-color: var(--color-element2);
   border-radius: 10px;
-  box-shadow: 5px 5px 5px var(--light-gray);
+  box-shadow: 5px 5px 5px var(--color-box-shadow);
 
   width: 200px;
   margin: 10px;
@@ -73,11 +101,11 @@ body {
 
   font-weight: var(--bold-font-weight);
   font-size: 1.5em;
-  color: var(--light-black);
+  color: var(--color-font);
 }
 
 .directions {
-  color: var(--light-black);
+  color: var(--color-font);
   text-align: center;
   margin: 0 auto;
 }
@@ -91,6 +119,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  color: var(--color-font);
 }
 .score-text {
   text-align: center;
@@ -108,7 +137,7 @@ body {
   /* grid-gap: clamp(0.1em, 0.5em, 0.5em); */
   /* width: 80%; */
   width: 320px;
-  background-color: var(--light-pink);
+  background-color: var(--color-element2);
   border-radius: 10px;
   padding: 5px;
 }
@@ -174,17 +203,19 @@ form {
   line-height: 50px;
   font-size: 30px;
   margin-right: 10px;
+  background-color: var(--color-element2);
+  color: var(--color-font);
 }
 
 #submit-word {
   width: 110px;
   line-height: 50px;
-  background-color: var(--light-green);
-  box-shadow: 3px 3px 3px var(--light-gray);
+  background-color: var(--color-element1);
+  box-shadow: 3px 3px 3px var(--color-box-shadow);
   font-size: 30px;
   border-radius: 10px;
   border: none;
-  color: var(--light-black);
+  color: var(--color-font);
 }
 
 /* alerts */
@@ -216,6 +247,7 @@ form {
   list-style-type: none;
   column-width: 80px;
   font-size: 30px;
+  color: var(--color-font);
 }
 
 /* game over screen  */
@@ -232,6 +264,12 @@ form {
   text-align: center;
 }
 
+.menu-box {
+  width: 60%;
+  margin: auto;
+  text-align: center;
+}
+
 #end-score {
   font-size: 30px;
   font-weight: var(--reg-font-weight);
@@ -239,9 +277,9 @@ form {
 }
 
 .play-again {
-  background-color: var(--light-pink);
+  background-color: var(--color-element2);
   border-radius: 10px;
-  box-shadow: 5px 5px 5px var(--light-gray);
+  box-shadow: 5px 5px 5px var(--color-box-shadow);
 
   width: 200px;
   margin: 10px;
@@ -253,7 +291,7 @@ form {
 
   font-weight: var(--bold-font-weight);
   font-size: 1.5em;
-  color: var(--light-black);
+  color: var(--color-font);
 }
 
 /* // Small devices (landscape phones, 576px and up) */

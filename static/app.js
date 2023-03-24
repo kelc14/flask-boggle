@@ -1,186 +1,209 @@
-//start button
-$startBtn = $("#start-btn");
-$reStartBtn = $(".play-again");
+// GAME FUNCTIONALITY       //////////////////////////
+class BoggleGame {
+  constructor(board, gameLength = 60) {
+    this.board = board;
+    this.gameLength = gameLength;
+    this.score = 0;
+    this.highScore = localStorage.getItem("highScore") || 0;
+    this.playCount = parseInt(localStorage.getItem("playCount") || 0);
 
-// score
-let $score = 0;
+    this.foundWords = new Set();
+    this.timerId = "";
 
-let $scoreText = $("#score-text");
-let $highScore = localStorage.getItem("highScore") || 0;
-let $highScoreText = $("#high-score-text");
+    this.pages = {};
 
-// play count
-let playCount = parseInt(localStorage.getItem("playCount") || 0);
+    this.definePages();
 
-// words
-const foundWords = new Set();
+    this.setButtonFunctions();
 
-// messages
-const $error = $("#error-alert");
-const $success = $("#success-alert");
+    this.handleHomePage();
+  }
 
-const $activeGame = $(".active-game");
-const $endGame = $(".end-game");
-const $startGame = $(".start-game");
-const $menuScreen = $(".menu-screen");
-const $infoScreen = $(".info-screen");
+  definePages() {
+    this.pages = {
+      $activeGame: $(".active-game"),
+      $endGame: $(".end-game"),
+      $startGame: $(".start-game"),
+      $menuScreen: $(".menu-screen"),
+      $infoScreen: $(".info-screen"),
+      $error: $("#error-alert"),
+      $success: $("#success-alert"),
+    };
+  }
 
-// const clickedWord = [];
+  setButtonFunctions() {
+    $("#start-btn").on("click", this.handleStart.bind(this));
+    $(".add-word").on("submit", this.processWord.bind(this));
+    $("#info-btn").on("click", this.displayInfo.bind(this));
+    $("#menu-btn").on("click", this.displayMenu.bind(this));
+  }
 
-$(document).ready(function () {
-  $activeGame.hide();
-  $endGame.hide();
-  $infoScreen.hide();
-  $menuScreen.hide();
+  handleHomePage() {
+    for (let page in this.pages) {
+      this.pages[page].hide();
+    }
+    this.pages.$startGame.show();
+  }
 
-  $startBtn.on("click", handleStart);
+  handleStart() {
+    for (let page in this.pages) {
+      this.pages[page].hide();
+    }
+    this.pages.$activeGame.show();
 
-  $("form").on("submit", processWord);
+    this.displayScoreBar();
+    // let count = 10;
+    this.timerId = setInterval(this.controlTimer.bind(this), 1000);
+  }
 
-  $("#info-btn").on("click", displayInfo);
-  $("#menu-btn").on("click", displayMenu);
-});
+  displayScoreBar() {
+    $("#score-text").text(`Score = ${this.score}`);
+    $("#high-score-text").text(`High Score = ${this.highScore}`);
+    $("#timer-text").text(`Time Left: ${this.gameLength} seconds`);
+  }
 
-async function processWord(ev) {
-  ev.preventDefault();
+  async controlTimer() {
+    this.gameLength = Number(this.gameLength) - 1;
+    $("#timer-text").text(`Time Left: ${this.gameLength} seconds`);
 
-  const word = $("#user_guess").val();
+    if (this.gameLength <= 0) {
+      clearInterval(this.timerId);
+      await this.endGame();
+    }
+  }
 
-  // if there is no word, return nothing
-  if (!word) {
+  async processWord(event) {
+    event.preventDefault();
+    const $word = $("#user_guess");
+
+    let word = $word.val();
+    $word.val("").focus();
+
+    // if there is no word, return nothing
+    if (!word) {
+      return;
+    }
+
+    // if the word is already submitted, return message that it was already submitted
+    if (this.foundWords.has(word)) {
+      this.pages.$success.hide();
+
+      return this.pages.$error.show().text("You already found this one!");
+    }
+
+    // if the word hasn't been on list , send ajax to /process to get response data
+    else {
+      const resp = await axios.get("/process", { params: { word: word } });
+      let result = resp.data.result;
+      if (result === "not-on-board") {
+        this.pages.$success.hide();
+
+        this.pages.$error
+          .show()
+          .text("This word is not on the board. Try again.");
+      }
+      if (result === "not-word") {
+        this.pages.$success.hide();
+        this.pages.$error.show().text("This is not a word. Try again.");
+      }
+      if (result === "ok") {
+        this.foundWords.add(word);
+        $("#found-word-list").append(`<li>${word}</li>`);
+        this.pages.$error.hide();
+        this.pages.$success.show().text("Nice word!");
+        // update score
+        this.score += word.length;
+        this.displayScoreBar();
+      }
+    }
+  }
+
+  displayInfo() {
+    clearInterval(this.timerId);
+    for (let page in this.pages) {
+      this.pages[page].hide();
+    }
+
+    this.pages.$infoScreen.show();
+  }
+  displayMenu() {
+    clearInterval(this.timerId);
+
+    for (let page in this.pages) {
+      this.pages[page].hide();
+    }
+    this.pages.$menuScreen.show();
+
+    $("#game-stats-high-score").text(`High Score: ${this.highScore}`);
+    $("#game-stats-play-count").text(
+      `Number of Games Played: ${this.playCount}`
+    );
+  }
+
+  async endGame() {
+    for (let page in this.pages) {
+      this.pages[page].hide();
+    }
+    this.pages.$endGame.show();
+    $("#end-score").text(`Your Score was ${this.score}`);
+    // save score to high score if its the best
+    if (this.score > this.highScore || this.highScore === 0) {
+      this.highScore = this.score;
+      localStorage.setItem("highScore", this.highScore);
+    }
+    //    /////// POST REQUEST TO SAVE HIGH SCORE ON SERVER AND RECEIVE PLAYCOUNT FROM SERVER
+    const resp = await axios.post("/handle-stats", {
+      highScore: this.highScore,
+    });
+    this.playCount = resp.data.playCount;
+    localStorage.setItem("playCount", this.playCount);
+  }
+}
+
+//    CALL A NEW GAME        //////
+const newGame = new BoggleGame();
+
+// toggle light and dark mode
+function toggleColorMode(ev) {
+  // Switch to Light Mode
+  if (ev.currentTarget.classList.contains("light--hidden")) {
+    // Sets the custom HTML attribute
+    document.documentElement.setAttribute("color-mode", "light");
+    document
+      .querySelector("#word-game-logo")
+      .setAttribute("src", "/images/dark mode logo");
+
+    //Sets the user's preference in local storage
+    localStorage.setItem("color-mode", "light");
     return;
   }
 
-  // if the word is already submitted, return message that it was already submitted
-  if (foundWords.has(word)) {
-    $("form").trigger("reset");
-    $success.hide();
+  /* Switch to Dark Mode
+    Sets the custom HTML attribute */
+  document.documentElement.setAttribute("color-mode", "dark");
 
-    return $error.show().text("You already found this one!");
-  }
-  // if the word hasn't been on list , send ajax to /process to get response data
-  else {
-    const resp = await axios.get("/process", { params: { word: word } });
-    result = resp.data.result;
-    if (result === "not-on-board") {
-      $success.hide();
-
-      $error.show().text("This word is not on the board. Try again.");
-    }
-    if (result === "not-word") {
-      $success.hide();
-      $error.show().text("This is not a word. Try again.");
-    }
-    if (result === "ok") {
-      foundWords.add(word);
-      $("#found-word-list").append(`<li>${word}</li>`);
-      $error.hide();
-      $success.show().text("Nice word!");
-      // update score
-      $score += word.length;
-      $scoreText.text(`Score = ${$score}`);
-    }
-    $("form").trigger("reset");
-  }
+  // Sets the user's preference in local storage
+  localStorage.setItem("color-mode", "dark");
 }
 
-function handleStart() {
-  $activeGame.show();
-  $startGame.hide();
+// Get the buttons in the DOM
+const toggleColorButtons = document.querySelectorAll(".color-mode__btn");
 
-  displayScores();
+// Set up event listeners
+toggleColorButtons.forEach((btn) => {
+  btn.addEventListener("click", toggleColorMode);
+});
 
-  let count = 10;
-  $("#timer-text").text(`Time Left: ${count} sec`);
-
-  let timerId = setInterval(function () {
-    if (count <= 0) {
-      clearInterval(timerId);
-      endGame();
-    } else {
-      count = Number(count) - 1;
-      $("#timer-text").text(`Time Left: ${count} seconds`);
-    }
-  }, 1000);
+// This code assumes a Light Mode default
+if (
+  /* This condition checks whether the user has set a site preference for dark mode OR a OS-level preference for Dark Mode AND no site preference */
+  localStorage.getItem("color-mode") === "dark" ||
+  (window.matchMedia("(prefers-color-scheme: dark)").matches &&
+    !localStorage.getItem("color-mode"))
+) {
+  // if true, set the site to Dark Mode
+  document.documentElement.setAttribute("color-mode", "dark");
+  document
+    .querySelector("#word-game-logo")
+    .setAttribute("src", "/images/dark mode logo");
 }
-
-function displayScores() {
-  $score = 0;
-  $scoreText.text(`Score = ${$score}`);
-
-  $highScoreText.text(`High Score = ${$highScore}`);
-}
-
-async function endGame() {
-  $activeGame.hide();
-  $endGame.show();
-
-  //   none of this is even happening because of the window reload. is there a better way to get a new board? Ajax request?? #############
-  //   $reStartBtn.on("click", function () {
-  //     handleRestart();
-  //     handleStart();
-  //   });
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###############################################################
-
-  $("#end-score").text(`Your Score was ${$score}`);
-
-  // save score to high score if its the best
-  if ($score > $highScore || $highScore === 0) {
-    $highScore = $score;
-    localStorage.setItem("highScore", $highScore);
-  }
-  //    /////// POST REQUEST TO SAVE HIGH SCORE ON SERVER AND RECEIVE PLAYCOUNT FROM SERVER
-  const resp = await axios.post("/handle-stats", {
-    highScore: $highScore,
-  });
-  playCount = resp.data.playCount;
-  localStorage.setItem("playCount", playCount);
-}
-
-// function handleRestart() {
-//   $endGame.hide();
-//   $activeGame.show();
-//   $startGame.hide();
-//   $infoScreen.hide();
-//   $menuScreen.hide();
-
-//   foundWords.clear();
-//   $("#found-word-list").empty();
-// }
-
-function displayMenu() {
-  $startGame.hide();
-  $activeGame.hide();
-  $endGame.hide();
-  $infoScreen.hide();
-
-  $menuScreen.show();
-
-  $("#game-stats-high-score").text(`High Score: ${$highScore}`);
-  $("#game-stats-play-count").text(`Number of Games Played: ${playCount}`);
-}
-
-function displayInfo() {
-  $startGame.hide();
-  $activeGame.hide();
-  $endGame.hide();
-  $menuScreen.hide();
-
-  $infoScreen.show();
-}
-
-// ############### COME BACK ######################//
-//     What I would like to do is that you click on the letters on the board, and it lights up in order.  BUT you can only click your neighbors... so must know x,y coordinates
-
-// $(".letter-button").on("click", function (e) {
-//   if ($(window).width() < 767) {
-//     letterClick(e);
-//   }
-// });
-
-// function letterClick(e) {
-//   target = e.target;
-//   letter = target.innerText;
-//   clickedWord.push(letter);
-//   console.log(clickedWord);
-// }

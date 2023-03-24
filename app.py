@@ -51,6 +51,5 @@ def handle_game_stats():
     play_count+=1
     session['play_count'] = play_count
 
-    # import pdb; pdb.set_trace()
     return jsonify({'playCount': play_count})
 
